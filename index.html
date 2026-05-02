@@ -623,13 +623,11 @@ table td.sno{padding:4px 8px;font-weight:600;color:#1a3c6e;}
       <div class="section-body">
         <div class="field"><label>Minutes Reference No.</label><input placeholder="MOM-2026-001"/></div>
         <div class="field"><label>Meeting Date</label><input type="date" id="meetingDate"/></div>
-        <div class="field"><label>Meeting Time</label><input type="time" id="meetingTime"/></div>
         <div class="field"><label>Meeting Venue</label><input placeholder="Conference Room / Location"/></div>
         <div class="field"><label>Meeting Type</label>
           <select><option>Survey Review</option><option>Write Off Approval</option><option>Joint Committee</option><option>Final Decision</option></select>
         </div>
         <div class="field"><label>Chaired By</label><input placeholder="Name of Chairman"/></div>
-        <div class="field"><label>Minute Recorded By</label><input placeholder="Secretary Name"/></div>
         <div class="field"><label>Meeting Status</label>
           <select><option>Scheduled</option><option>In Progress</option><option>Completed</option><option>Adjourned</option></select>
         </div>
@@ -683,27 +681,23 @@ table td.sno{padding:4px 8px;font-weight:600;color:#1a3c6e;}
           Note: Select ZSC Zone (1-6) to auto-fill committee members as per Zonal Survey Committee List. Signature column is editable.
         </div>
       </div>
-      <div class="section-hdr" style="margin-top:12px">Agenda Items &amp; Discussion Points</div>
-      <div style="border:1px solid #1a3c6e;border-top:none;padding:10px;background:#fafbff;">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-          <button class="add-btn" onclick="addAgenda()">+ Add Agenda</button>
-        </div>
-        <table><thead><tr style="background:#1a3c6e;color:#fff;">
-          <th style="padding:6px 8px">S.No</th><th style="padding:6px 8px">Agenda Item</th>
-          <th style="padding:6px 8px">Discussion Summary</th><th style="padding:6px 8px">Decision / Resolution</th>
-          <th style="padding:6px 8px">Responsible</th><th style="padding:6px 8px">Target Date</th><th style="padding:6px 8px">Action</th>
-        </tr></thead>
-        <tbody id="agenda-tbody">
-          <tr><td class="sno">1</td><td><input style="width:150px" placeholder="Agenda item..."/></td><td><textarea style="width:180px;height:40px;font-size:11px;resize:none"></textarea></td><td><textarea style="width:160px;height:40px;font-size:11px;resize:none"></textarea></td><td><input style="width:110px"/></td><td><input type="date" style="width:120px"/></td><td><button class="del-btn" onclick="this.closest('tr').remove()">🗑</button></td></tr>
-        </tbody>
-        </table>
+      <div class="section-hdr" style="margin-top:12px">Brief History / Background</div>
+      <div style="border:1px solid #1a3c6e;border-top:none;padding:14px;background:#fafbff;">
+        <textarea id="briefHistory" rows="8" style="width:100%;height:180px;padding:10px;border:1px solid #c0cce8;border-radius:3px;font-size:12px;font-family:Arial;resize:vertical;" placeholder="Provide brief history and background of the equipment proposed for survey and write-off. Include details such as:&#10;- Year of purchase and original purpose&#10;- Current condition and reasons for write-off&#10;- Previous repair/maintenance history&#10;- Technical assessment summary&#10;- Justification for write-off recommendation..."></textarea>
       </div>
       <div class="section-hdr" style="margin-top:12px">Overall Decision &amp; Next Steps</div>
       <div style="border:1px solid #1a3c6e;border-top:none;padding:12px;background:#fafbff;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
         <div class="field"><label>Committee Decision</label>
           <select><option>-- Select --</option><option>Approve Write Off</option><option>Reject Write Off</option><option>Partial Approval</option><option>Deferred for Further Study</option></select>
         </div>
-        <div class="field"><label>Next Meeting Date</label><input type="date"/></div>
+        <div class="field"><label>Replacement</label>
+          <select id="replacementStatus" style="padding:4px 8px;border:1px solid #8aabcc;border-radius:2px;font-size:12px;">
+            <option value="">-- Select --</option>
+            <option value="Recommended">Recommended</option>
+            <option value="Not Recommended">Not Recommended</option>
+            <option value="Partial Recommended">Partial Recommended</option>
+          </select>
+        </div>
         <div class="field" style="grid-column:span 2"><label>Final Remarks / Resolution</label>
           <textarea rows="3" style="height:60px" placeholder="Final committee resolution and any additional notes..."></textarea>
         </div>
@@ -1816,7 +1810,7 @@ table td.sno{padding:4px 8px;font-weight:600;color:#1a3c6e;}
           <select><option>Survey Review</option><option>Write Off Approval</option><option>Joint Committee</option><option>Final Decision</option></select>
         </div>
         <div class="field"><label>Chaired By</label><input placeholder="Name of Chairman"/></div>
-        <div class="field"><label>Minute Recorded By</label><input placeholder="Secretary Name"/></div>
+        
         <div class="field"><label>Meeting Status</label>
           <select><option>Scheduled</option><option>In Progress</option><option>Completed</option><option>Adjourned</option></select>
         </div>
@@ -2895,6 +2889,7 @@ function renderItemsTable() {
     const uomOpts = ["EA","KG","L","M","PC","SET"].map(u=>`<option${item.uom===u?" selected":""}>${u}</option>`).join("");
     tr.innerHTML = `
       <td class="sno">${item.sno}</td>
+      <td><input value="${item.assetNo||''}" oninput="items[${idx}].assetNo=this.value" style="width:100px;border-color:#1a5a8a" placeholder="Asset No."/></td>
       <td><input value="${item.material}" oninput="items[${idx}].material=this.value;updateTotals()" style="width:90px"/></td>
       <td><input value="${item.description}" oninput="items[${idx}].description=this.value" style="width:110px"/></td>
       <td><input value="${item.batch}" oninput="items[${idx}].batch=this.value" style="width:70px"/></td>
@@ -2941,8 +2936,8 @@ function renderItemDetail() {
   document.getElementById("item-detail-content").innerHTML = `
     <div class="section-hdr">Item ${it.sno} — Material Details</div>
     <div class="section-body">
-      <div class="field"><label>Material No.</label><input value="${it.material}" oninput="items[${selItem}].material=this.value;renderItemsTable()"/></div>
-      <div class="field"><label>Description</label><input value="${it.description}" oninput="items[${selItem}].description=this.value;renderItemsTable()"/></div>
+      <div class="field"><label>Asset Identification No./Sl.No.</label><input value="${it.material}" oninput="items[${selItem}].material=this.value;renderItemsTable()"/></div>
+      <div class="field"><label>Asset Description</label><input value="${it.description}" oninput="items[${selItem}].description=this.value;renderItemsTable()"/></div>
       <div class="field"><label>Batch No.</label><input value="${it.batch}" oninput="items[${selItem}].batch=this.value;renderItemsTable()"/></div>
       <div class="field"><label>Serial No.</label><input value="${it.serial}" oninput="items[${selItem}].serial=this.value"/></div>
     </div>
@@ -3279,8 +3274,8 @@ async function downloadPDF() {
     ]]);
 
     sh("Items");
-    const cols=["S.No","Material","Description","Batch","Qty","UoM","Value(₹)","GL Acct","Cost Ctr","Reason"];
-    const cw=[10,20,30,16,13,11,18,18,16,20];
+    const cols=["S.No","Asset No.","Material","Asset Description","Batch","Qty","UoM","Value(₹)","GL Acct","Cost Ctr","Reason"];
+    const cw=[10,18,18,28,16,13,11,18,18,16,20];
     const tw=W-M*2;
     doc.setFillColor(26,60,110);doc.rect(M,y,tw,7,"F");
     doc.setTextColor(255,255,255);doc.setFontSize(7.5);doc.setFont("helvetica","bold");
